@@ -60,7 +60,8 @@
         background-color: #be123c; /* rose-700 */
       }
       .input-field,
-      .select-field {
+      .select-field,
+      .textarea-field {
         background-color: #334155; /* slate-700 */
         border: 1px solid #475569; /* slate-600 */
         color: #f1f5f9; /* slate-100 */
@@ -70,7 +71,8 @@
         width: 100%;
       }
       .input-field:focus,
-      .select-field:focus {
+      .select-field:focus,
+      .textarea-field:focus {
         outline: none;
         border-color: #4f46e5;
         box-shadow: 0 0 0 2px #3730a3;
@@ -95,6 +97,10 @@
       }
       input[type="number"] {
         -moz-appearance: textfield;
+      }
+      #voice-visualizer {
+        background-color: #0f172a;
+        border-radius: 0.5rem;
       }
     </style>
   </head>
@@ -397,7 +403,7 @@
       id="save-recipe-modal"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
     >
-      <div class="card w-full max-w-md">
+      <div class="card w-full max-w-lg">
         <h2 class="text-2xl font-bold mb-4 text-slate-200">Guardar Receta</h2>
         <form id="save-recipe-form" class="space-y-4">
           <div>
@@ -414,6 +420,70 @@
               required
             />
           </div>
+          <div>
+            <label
+              for="save-recipe-description"
+              class="block text-sm font-medium text-slate-300 mb-1"
+              >Descripción (Pasos de la receta)</label
+            >
+            <textarea
+              id="save-recipe-description"
+              class="textarea-field"
+              rows="5"
+              placeholder="Escribe o dicta los pasos..."
+            ></textarea>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-slate-300"
+              >Grabar Audio y Transcribir</label
+            >
+            <div class="flex items-center gap-4 p-2 bg-slate-700/50 rounded-lg">
+              <button
+                type="button"
+                id="voice-control-btn"
+                class="btn btn-primary flex-shrink-0"
+                title="Grabar con voz"
+              >
+                <svg
+                  id="mic-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z" />
+                  <path d="M5.5 4.5a2.5 2.5 0 015 0v6a2.5 2.5 0 01-5 0V4.5z" />
+                  <path
+                    d="M10 15a5.5 5.5 0 005.5-5.5V4a1 1 0 10-2 0v5.5a3.5 3.5 0 11-7 0V4a1 1 0 10-2 0v5.5A5.5 5.5 0 0010 15z"
+                  />
+                </svg>
+                <svg
+                  id="stop-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 hidden"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+              <canvas
+                id="voice-visualizer"
+                width="300"
+                height="40"
+                class="flex-grow hidden"
+              ></canvas>
+            </div>
+            <a
+              id="download-audio-link"
+              class="text-sm text-indigo-400 hover:text-indigo-300 hidden"
+              >Descargar audio grabado (.wav)</a
+            >
+          </div>
           <div class="flex justify-end gap-4 pt-4">
             <button
               type="button"
@@ -425,6 +495,32 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Recipe Details Modal -->
+    <div
+      id="recipe-details-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+          <h2
+            id="recipe-details-title"
+            class="text-2xl font-bold text-slate-200"
+          >
+            Detalles de la Receta
+          </h2>
+          <button
+            id="close-recipe-details-modal"
+            class="icon-btn text-3xl leading-none"
+          >
+            &times;
+          </button>
+        </div>
+        <div id="recipe-details-content" class="overflow-y-auto pr-4 space-y-4">
+          <!-- Content will be injected here -->
+        </div>
       </div>
     </div>
 
@@ -525,9 +621,36 @@
           <!-- Step 4 -->
           <div class="flex gap-4 items-start">
             <div
-              class="flex-shrink-0 w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+              class="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
             >
               4
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-slate-100">
+                Guarda tu Receta (con descripción y audio)
+              </h3>
+              <p class="text-slate-400 mt-1">
+                Presiona
+                <strong class="text-amber-300">"Guardar Receta"</strong>. Se
+                abrirá una ventana donde podrás ponerle un nombre y escribir los
+                pasos.
+              </p>
+              <p class="text-slate-400 mt-2">
+                Para grabar, presiona el botón del
+                <strong class="text-amber-300">micrófono</strong>. Mientras
+                hablas, el texto aparecerá escrito y verás las ondas de sonido.
+                Presiona el botón de
+                <strong class="text-amber-300">stop</strong> para detener.
+                Podrás descargar el audio grabado.
+              </p>
+            </div>
+          </div>
+          <!-- Step 5 -->
+          <div class="flex gap-4 items-start">
+            <div
+              class="flex-shrink-0 w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+            >
+              5
             </div>
             <div>
               <h3 class="font-bold text-lg text-slate-100">
@@ -562,6 +685,12 @@
         let pantry = [];
         let currentRecipe = [];
         let savedRecipes = [];
+        let isRecording = false;
+        let mediaRecorder;
+        let audioChunks = [];
+        let currentAudioBase64 = null;
+        let audioContext, analyser, visualizerFrameId;
+        let stream;
 
         // --- DOM ELEMENTS ---
         const pantryForm = document.getElementById("pantry-form");
@@ -590,6 +719,22 @@
         );
         const closeInstructionsBtn = document.getElementById(
           "close-instructions-modal"
+        );
+        const recipeDetailsModal = document.getElementById(
+          "recipe-details-modal"
+        );
+        const closeRecipeDetailsBtn = document.getElementById(
+          "close-recipe-details-modal"
+        );
+        const voiceControlBtn = document.getElementById("voice-control-btn");
+        const micIcon = document.getElementById("mic-icon");
+        const stopIcon = document.getElementById("stop-icon");
+        const visualizerCanvas = document.getElementById("voice-visualizer");
+        const downloadAudioLink = document.getElementById(
+          "download-audio-link"
+        );
+        const recipeDescriptionTextarea = document.getElementById(
+          "save-recipe-description"
         );
 
         // --- UNIT CONVERSIONS (to base units: g, ml, unit) ---
@@ -653,6 +798,142 @@
           }
         }
 
+        // --- SPEECH RECOGNITION & AUDIO RECORDING ---
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+          recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.lang = "es-CL";
+          recognition.interimResults = false;
+
+          recognition.onresult = (event) => {
+            let final_transcript = "";
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                final_transcript += event.results[i][0].transcript;
+              }
+            }
+            if (final_transcript) {
+              recipeDescriptionTextarea.value += final_transcript.trim() + ". ";
+            }
+          };
+
+          recognition.onerror = (event) => {
+            console.error("Speech recognition error", event.error);
+            if (isRecording) stopRecording();
+          };
+        } else {
+          voiceControlBtn.parentElement.style.display = "none";
+        }
+
+        async function toggleRecording() {
+          if (isRecording) {
+            stopRecording();
+          } else {
+            await startRecording();
+          }
+        }
+
+        async function startRecording() {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            isRecording = true;
+
+            audioChunks = [];
+            currentAudioBase64 = null;
+            downloadAudioLink.classList.add("hidden");
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = (event) =>
+              audioChunks.push(event.data);
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+              const audioUrl = URL.createObjectURL(audioBlob);
+              downloadAudioLink.href = audioUrl;
+              downloadAudioLink.download = `receta_${Date.now()}.wav`;
+              downloadAudioLink.classList.remove("hidden");
+
+              // Convert to Base64
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                currentAudioBase64 = reader.result;
+              };
+              reader.readAsDataURL(audioBlob);
+            };
+            mediaRecorder.start();
+
+            if (recognition) recognition.start();
+            setupVisualizer();
+            updateVoiceButtonUI(true);
+          } catch (err) {
+            console.error("Error al acceder al micrófono:", err);
+            alert(
+              "No se pudo acceder al micrófono. Asegúrate de dar permiso en tu navegador."
+            );
+          }
+        }
+
+        function stopRecording() {
+          if (mediaRecorder && mediaRecorder.state === "recording")
+            mediaRecorder.stop();
+          if (recognition) recognition.stop();
+          if (stream) stream.getTracks().forEach((track) => track.stop());
+          if (audioContext && audioContext.state !== "closed")
+            audioContext.close();
+          cancelAnimationFrame(visualizerFrameId);
+          isRecording = false;
+          updateVoiceButtonUI(false);
+        }
+
+        function setupVisualizer() {
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          const source = audioContext.createMediaStreamSource(stream);
+          source.connect(analyser);
+          analyser.fftSize = 256;
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          const canvasCtx = visualizerCanvas.getContext("2d");
+
+          function draw() {
+            visualizerFrameId = requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+            canvasCtx.fillStyle = "#0f172a";
+            canvasCtx.fillRect(
+              0,
+              0,
+              visualizerCanvas.width,
+              visualizerCanvas.height
+            );
+            const barWidth = (visualizerCanvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+            for (let i = 0; i < bufferLength; i++) {
+              barHeight = dataArray[i] / 2.5;
+              canvasCtx.fillStyle = `rgb(79, 70, 229, ${barHeight / 100})`;
+              canvasCtx.fillRect(
+                x,
+                visualizerCanvas.height - barHeight,
+                barWidth,
+                barHeight
+              );
+              x += barWidth + 1;
+            }
+          }
+          draw();
+        }
+
+        function updateVoiceButtonUI(isRec) {
+          visualizerCanvas.classList.toggle("hidden", !isRec);
+          micIcon.classList.toggle("hidden", isRec);
+          stopIcon.classList.toggle("hidden", !isRec);
+          voiceControlBtn.classList.toggle("btn-danger", isRec);
+          voiceControlBtn.classList.toggle("btn-primary", !isRec);
+        }
+
         // --- EXCEL HANDLING ---
         function handleFileUpload(event) {
           const file = event.target.files[0];
@@ -671,21 +952,40 @@
                 const recipesRaw = XLSX.utils.sheet_to_json(
                   workbook.Sheets["SavedRecipes"]
                 );
-                // Group ingredients by recipe ID
                 const recipesGrouped = recipesRaw.reduce((acc, row) => {
-                  acc[row.recipeId] = acc[row.recipeId] || {
-                    id: row.recipeId,
-                    name: row.recipeName,
-                    ingredients: [],
-                  };
-                  acc[row.recipeId].ingredients.push({
-                    id: row.ingredientId,
-                    pantryId: row.pantryId,
-                    name: row.ingredientName,
-                    usedQuantity: row.usedQuantity,
-                    usedUnit: row.usedUnit,
-                    cost: row.cost,
-                  });
+                  if (!acc[row.recipeId]) {
+                    // Reassemble audio from chunks
+                    let audioBase64 = "";
+                    const audioChunks = [];
+                    for (const key in row) {
+                      if (key.startsWith("recipeAudioBase64_part_")) {
+                        const partIndex =
+                          parseInt(key.split("_").pop(), 10) - 1;
+                        audioChunks[partIndex] = row[key];
+                      }
+                    }
+                    if (audioChunks.length > 0) {
+                      audioBase64 = audioChunks.join("");
+                    }
+
+                    acc[row.recipeId] = {
+                      id: row.recipeId,
+                      name: row.recipeName,
+                      description: row.recipeDescription || "",
+                      audioBase64: audioBase64 || null,
+                      ingredients: [],
+                    };
+                  }
+                  if (row.ingredientId) {
+                    acc[row.recipeId].ingredients.push({
+                      id: row.ingredientId,
+                      pantryId: row.pantryId,
+                      name: row.ingredientName,
+                      usedQuantity: row.usedQuantity,
+                      usedUnit: row.usedUnit,
+                      cost: row.cost,
+                    });
+                  }
                   return acc;
                 }, {});
                 savedRecipes = Object.values(recipesGrouped);
@@ -705,21 +1005,42 @@
         }
 
         function saveAndDownloadExcel() {
+          const CHUNK_SIZE = 32000;
           const pantrySheet = XLSX.utils.json_to_sheet(pantry);
 
-          // Flatten saved recipes for Excel
-          const recipesFlat = savedRecipes.flatMap((recipe) =>
-            recipe.ingredients.map((ing) => ({
+          const recipesFlat = savedRecipes.flatMap((recipe) => {
+            const baseData = {
               recipeId: recipe.id,
               recipeName: recipe.name,
+              recipeDescription: recipe.description,
+            };
+
+            // Handle audio chunking
+            if (recipe.audioBase64) {
+              for (let i = 0; i * CHUNK_SIZE < recipe.audioBase64.length; i++) {
+                baseData[`recipeAudioBase64_part_${i + 1}`] =
+                  recipe.audioBase64.substring(
+                    i * CHUNK_SIZE,
+                    (i + 1) * CHUNK_SIZE
+                  );
+              }
+            }
+
+            if (recipe.ingredients.length === 0) {
+              return [baseData];
+            }
+
+            return recipe.ingredients.map((ing) => ({
+              ...baseData,
               ingredientId: ing.id,
               pantryId: ing.pantryId,
               ingredientName: ing.name,
               usedQuantity: ing.usedQuantity,
               usedUnit: ing.usedUnit,
               cost: ing.cost,
-            }))
-          );
+            }));
+          });
+
           const recipesSheet = XLSX.utils.json_to_sheet(recipesFlat);
 
           const workbook = XLSX.utils.book_new();
@@ -736,6 +1057,8 @@
             [
               "recipeId",
               "recipeName",
+              "recipeDescription",
+              "recipeAudioBase64_part_1",
               "ingredientId",
               "pantryId",
               "ingredientName",
@@ -835,12 +1158,71 @@
             el.innerHTML = `
                         <p class="font-semibold text-slate-200">${recipe.name}</p>
                         <div class="flex gap-2">
-                            <button class="btn btn-primary text-xs load-recipe-btn" data-id="${recipe.id}">Cargar</button>
+                            <button class="btn btn-primary text-xs view-recipe-btn" data-id="${recipe.id}">Ver</button>
+                            <button class="btn btn-success text-xs load-recipe-btn" data-id="${recipe.id}">Cargar</button>
                             <button class="icon-btn delete-saved-recipe-btn" data-id="${recipe.id}" title="Eliminar Receta"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
                         </div>
                     `;
             savedRecipesList.appendChild(el);
           });
+        }
+
+        function showRecipeDetails(recipeId) {
+          const recipe = savedRecipes.find((r) => r.id === recipeId);
+          if (!recipe) return;
+
+          const titleEl = document.getElementById("recipe-details-title");
+          const contentEl = document.getElementById("recipe-details-content");
+
+          titleEl.textContent = recipe.name;
+
+          let ingredientsHtml = recipe.ingredients
+            .map(
+              (ing) => `
+                    <li class="flex justify-between">
+                        <span>${ing.name} - ${ing.usedQuantity} ${
+                ing.usedUnit
+              }</span>
+                        <span>${currencyFormatter.format(ing.cost)}</span>
+                    </li>
+                `
+            )
+            .join("");
+
+          const totalCost = recipe.ingredients.reduce(
+            (sum, ing) => sum + ing.cost,
+            0
+          );
+
+          let audioPlayerHtml = "";
+          if (recipe.audioBase64) {
+            audioPlayerHtml = `
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-100 mb-2">Audio de la Receta</h3>
+                            <audio controls src="${recipe.audioBase64}" class="w-full"></audio>
+                        </div>
+                    `;
+          }
+
+          contentEl.innerHTML = `
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-100 mb-2">Ingredientes</h3>
+                        <ul class="space-y-1 text-slate-300 list-disc list-inside">${ingredientsHtml}</ul>
+                        <div class="flex justify-between font-bold text-slate-100 border-t border-slate-600 mt-2 pt-2">
+                            <span>Costo Total:</span>
+                            <span>${currencyFormatter.format(totalCost)}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-100 mb-2">Preparación</h3>
+                        <p class="text-slate-300 whitespace-pre-wrap">${
+                          recipe.description || "No se añadió una descripción."
+                        }</p>
+                    </div>
+                    ${audioPlayerHtml}
+                `;
+
+          recipeDetailsModal.classList.remove("hidden");
         }
 
         function updatePantrySelect() {
@@ -952,6 +1334,11 @@
             savedRecipes = savedRecipes.filter((r) => r.id !== id);
             renderAll();
           }
+          const viewBtn = e.target.closest(".view-recipe-btn");
+          if (viewBtn) {
+            const id = parseInt(viewBtn.dataset.id);
+            showRecipeDetails(id);
+          }
         });
 
         clearRecipeBtn.addEventListener("click", () => {
@@ -967,23 +1354,33 @@
             alert("No puedes guardar una receta vacía.");
           }
         });
-        cancelSaveRecipeBtn.addEventListener("click", () =>
-          saveRecipeModal.classList.add("hidden")
-        );
+        cancelSaveRecipeBtn.addEventListener("click", () => {
+          stopRecording();
+          saveRecipeModal.classList.add("hidden");
+        });
         saveRecipeForm.addEventListener("submit", (e) => {
           e.preventDefault();
+          stopRecording();
           const name = document.getElementById("save-recipe-name").value;
+          const description = document.getElementById(
+            "save-recipe-description"
+          ).value;
           if (name) {
             savedRecipes.push({
               id: Date.now(),
               name,
+              description,
+              audioBase64: currentAudioBase64,
               ingredients: JSON.parse(JSON.stringify(currentRecipe)),
             });
+            currentAudioBase64 = null;
             saveRecipeModal.classList.add("hidden");
             saveRecipeForm.reset();
             renderAll();
           }
         });
+
+        voiceControlBtn.addEventListener("click", toggleRecording);
 
         pantrySelect.addEventListener("change", updateRecipeUnitOptions);
         excelUpload.addEventListener("change", handleFileUpload);
@@ -995,6 +1392,9 @@
         );
         closeInstructionsBtn.addEventListener("click", () =>
           instructionsModal.classList.add("hidden")
+        );
+        closeRecipeDetailsBtn.addEventListener("click", () =>
+          recipeDetailsModal.classList.add("hidden")
         );
 
         // --- INITIALIZATION ---
