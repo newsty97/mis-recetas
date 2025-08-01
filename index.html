@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora de Costos y Precios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #0f172a; /* slate-900 */
+        color: #f1f5f9; /* slate-100 */
+      }
+      .card {
+        background-color: #1e293b; /* slate-800 */
+        border: 1px solid #334155; /* slate-700 */
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+      }
+      .btn {
+        transition: all 0.3s ease;
+        border-radius: 0.5rem;
+        padding: 0.6rem 1rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+      .btn:disabled {
+        background-color: #334155;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+      .btn-primary {
+        background-color: #4f46e5; /* indigo-600 */
+        color: white;
+      }
+      .btn-primary:hover:not(:disabled) {
+        background-color: #4338ca; /* indigo-700 */
+      }
+      .btn-success {
+        background-color: #10b981; /* emerald-500 */
+        color: white;
+      }
+      .btn-success:hover:not(:disabled) {
+        background-color: #059669; /* emerald-600 */
+      }
+      .btn-danger {
+        background-color: #e11d48; /* rose-600 */
+        color: white;
+      }
+      .btn-danger:hover:not(:disabled) {
+        background-color: #be123c; /* rose-700 */
+      }
+      .input-field,
+      .select-field {
+        background-color: #334155; /* slate-700 */
+        border: 1px solid #475569; /* slate-600 */
+        color: #f1f5f9; /* slate-100 */
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        width: 100%;
+      }
+      .input-field:focus,
+      .select-field:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 2px #3730a3;
+      }
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #94a3b8; /* slate-400 */
+        transition: color 0.2s ease;
+      }
+      .icon-btn:hover {
+        color: #f1f5f9; /* slate-100 */
+      }
+      .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.7);
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+    </style>
+  </head>
+  <body class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto space-y-8">
+      <header class="text-center">
+        <h1
+          class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400"
+        >
+          Calculadora de Costos y Precios
+        </h1>
+        <p class="text-slate-400 mt-2">
+          Gestiona tu despensa, guarda tus recetas, calcula tus costos y define
+          tus precios.
+        </p>
+      </header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="card">
+          <h2 class="text-2xl font-bold mb-4 text-slate-200">
+            Gestión de Datos
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <label
+                for="excel-upload"
+                class="block text-sm font-medium text-slate-300 mb-1"
+                >Cargar Datos desde Excel</label
+              >
+              <input
+                type="file"
+                id="excel-upload"
+                class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                accept=".xlsx, .xls"
+              />
+            </div>
+            <div>
+              <label
+                for="download-btn"
+                class="block text-sm font-medium text-slate-300 mb-1"
+                >Guardar Todo en Excel</label
+              >
+              <button id="download-btn" class="w-full btn btn-success">
+                Descargar Archivo Excel
+              </button>
+            </div>
+            <a
+              href="#"
+              id="template-download-link"
+              class="block text-center text-sm text-indigo-400 hover:text-indigo-300"
+              >Descargar plantilla de Excel</a
+            >
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="text-2xl font-bold mb-4 text-slate-200">
+            Mis Recetas Guardadas
+          </h2>
+          <div
+            id="saved-recipes-list"
+            class="space-y-3 max-h-48 overflow-y-auto pr-2"
+          >
+            <!-- Las recetas guardadas se insertarán aquí -->
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Columna de Ingredientes (Despensa) -->
+        <div class="space-y-6">
+          <div class="card">
+            <h2 class="text-2xl font-bold mb-4 text-slate-200">
+              1. Añadir Ingrediente a la Despensa
+            </h2>
+            <form id="pantry-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    for="pantry-ingredient-name"
+                    class="block text-sm font-medium text-slate-300 mb-1"
+                    >Nombre del Ingrediente</label
+                  >
+                  <input
+                    type="text"
+                    id="pantry-ingredient-name"
+                    placeholder="Ej: Harina de trigo"
+                    class="input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    for="pantry-ingredient-price"
+                    class="block text-sm font-medium text-slate-300 mb-1"
+                    >Precio de Compra (CLP)</label
+                  >
+                  <input
+                    type="number"
+                    id="pantry-ingredient-price"
+                    placeholder="Ej: 2000"
+                    class="input-field"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    for="pantry-ingredient-quantity"
+                    class="block text-sm font-medium text-slate-300 mb-1"
+                    >Cantidad Comprada</label
+                  >
+                  <input
+                    type="number"
+                    id="pantry-ingredient-quantity"
+                    placeholder="Ej: 1"
+                    class="input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    for="pantry-ingredient-unit"
+                    class="block text-sm font-medium text-slate-300 mb-1"
+                    >Unidad de Compra</label
+                  >
+                  <select
+                    id="pantry-ingredient-unit"
+                    class="select-field"
+                    required
+                  >
+                    <option value="kg">Kilos (kg)</option>
+                    <option value="g">Gramos (g)</option>
+                    <option value="L">Litros (L)</option>
+                    <option value="ml">Mililitros (ml)</option>
+                    <option value="unit">Unidad(es)</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="w-full btn btn-primary">
+                Añadir a Despensa
+              </button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2 class="text-2xl font-bold mb-4 text-slate-200">Mi Despensa</h2>
+            <div
+              id="pantry-list"
+              class="space-y-3 max-h-96 overflow-y-auto pr-2"
+            >
+              <!-- Los ingredientes de la despensa se insertarán aquí -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna de Receta -->
+        <div class="space-y-6">
+          <div class="card">
+            <h2 class="text-2xl font-bold mb-4 text-slate-200">
+              2. Construir Receta Actual
+            </h2>
+            <form id="recipe-form" class="space-y-4">
+              <div>
+                <label
+                  for="recipe-ingredient-select"
+                  class="block text-sm font-medium text-slate-300 mb-1"
+                  >Ingrediente</label
+                >
+                <select
+                  id="recipe-ingredient-select"
+                  class="select-field"
+                  required
+                >
+                  <option value="">
+                    Selecciona un ingrediente de tu despensa
+                  </option>
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    for="recipe-ingredient-quantity"
+                    class="block text-sm font-medium text-slate-300 mb-1"
+                    >Cantidad Usada</label
+                  >
+                  <input
+                    type="number"
+                    id="recipe-ingredient-quantity"
+                    placeholder="Ej: 250"
+                    class="input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    for="recipe-ingredient-unit"
+                    class="block text-sm font-medium text-slate-300 mb-1"
+                    >Unidad Usada</label
+                  >
+                  <select
+                    id="recipe-ingredient-unit"
+                    class="select-field"
+                    required
+                  >
+                    <option value="g">Gramos (g)</option>
+                    <option value="kg">Kilos (kg)</option>
+                    <option value="ml">Mililitros (ml)</option>
+                    <option value="L">Litros (L)</option>
+                    <option value="unit">Unidad(es)</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="w-full btn btn-primary">
+                Añadir a Receta
+              </button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="flex flex-wrap gap-4 justify-between items-center mb-4">
+              <h2 class="text-2xl font-bold text-slate-200">
+                Análisis de Receta
+              </h2>
+              <div class="flex gap-2">
+                <button id="save-recipe-btn" class="btn btn-success text-xs">
+                  Guardar Receta
+                </button>
+                <button id="clear-recipe-btn" class="btn btn-danger text-xs">
+                  Limpiar Receta
+                </button>
+              </div>
+            </div>
+            <div id="recipe-list" class="space-y-2 mb-4">
+              <!-- Los ingredientes de la receta se insertarán aquí -->
+            </div>
+            <div class="border-t-2 border-slate-700 pt-4 mt-4 space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-lg font-bold text-slate-100"
+                  >COSTO TOTAL:</span
+                >
+                <span
+                  id="total-cost"
+                  class="text-2xl font-extrabold text-cyan-400"
+                  >$0</span
+                >
+              </div>
+              <div class="space-y-2">
+                <label
+                  for="profit-margin"
+                  class="block text-sm font-medium text-slate-300"
+                  >Porcentaje de Ganancia (%)</label
+                >
+                <input
+                  type="number"
+                  id="profit-margin"
+                  value="100"
+                  class="input-field w-full"
+                  placeholder="Ej: 100"
+                />
+              </div>
+              <div
+                class="flex justify-between items-center bg-slate-900 p-3 rounded-lg"
+              >
+                <span class="text-lg font-bold text-green-400"
+                  >PRECIO DE VENTA:</span
+                >
+                <span
+                  id="selling-price"
+                  class="text-2xl font-extrabold text-green-400"
+                  >$0</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Recipe Modal -->
+    <div
+      id="save-recipe-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-4 text-slate-200">Guardar Receta</h2>
+        <form id="save-recipe-form" class="space-y-4">
+          <div>
+            <label
+              for="save-recipe-name"
+              class="block text-sm font-medium text-slate-300 mb-1"
+              >Nombre de la Receta</label
+            >
+            <input
+              type="text"
+              id="save-recipe-name"
+              class="input-field"
+              placeholder="Ej: Pastel de Chocolate Clásico"
+              required
+            />
+          </div>
+          <div class="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              id="cancel-save-recipe"
+              class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- STATE ---
+        let pantry = [];
+        let currentRecipe = [];
+        let savedRecipes = [];
+
+        // --- DOM ELEMENTS ---
+        const pantryForm = document.getElementById("pantry-form");
+        const pantryList = document.getElementById("pantry-list");
+        const recipeForm = document.getElementById("recipe-form");
+        const recipeList = document.getElementById("recipe-list");
+        const pantrySelect = document.getElementById(
+          "recipe-ingredient-select"
+        );
+        const totalCostEl = document.getElementById("total-cost");
+        const clearRecipeBtn = document.getElementById("clear-recipe-btn");
+        const profitMarginInput = document.getElementById("profit-margin");
+        const sellingPriceEl = document.getElementById("selling-price");
+        const saveRecipeBtn = document.getElementById("save-recipe-btn");
+        const saveRecipeModal = document.getElementById("save-recipe-modal");
+        const saveRecipeForm = document.getElementById("save-recipe-form");
+        const cancelSaveRecipeBtn =
+          document.getElementById("cancel-save-recipe");
+        const savedRecipesList = document.getElementById("saved-recipes-list");
+        const excelUpload = document.getElementById("excel-upload");
+        const downloadBtn = document.getElementById("download-btn");
+        const templateLink = document.getElementById("template-download-link");
+
+        // --- UNIT CONVERSIONS (to base units: g, ml, unit) ---
+        const conversions = { g: 1, kg: 1000, ml: 1, L: 1000, unit: 1 };
+        const unitCompatibility = {
+          g: ["g", "kg"],
+          kg: ["g", "kg"],
+          ml: ["ml", "L"],
+          L: ["ml", "L"],
+          unit: ["unit"],
+        };
+
+        // --- LOCAL STORAGE (as a fallback) ---
+        function saveStateToLocalStorage() {
+          localStorage.setItem("pantry", JSON.stringify(pantry));
+          localStorage.setItem("savedRecipes", JSON.stringify(savedRecipes));
+        }
+
+        function loadStateFromLocalStorage() {
+          pantry = JSON.parse(localStorage.getItem("pantry") || "[]");
+          savedRecipes = JSON.parse(
+            localStorage.getItem("savedRecipes") || "[]"
+          );
+        }
+
+        // --- FORMATTING ---
+        const currencyFormatter = new Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+          maximumFractionDigits: 0,
+        });
+
+        // --- CORE LOGIC ---
+        function calculateCost(pantryIngredientId, usedQuantity, usedUnit) {
+          const ingredient = pantry.find((i) => i.id === pantryIngredientId);
+          if (!ingredient) return 0;
+          const baseUnitCost =
+            ingredient.price /
+            (ingredient.quantity * conversions[ingredient.unit]);
+          return baseUnitCost * usedQuantity * conversions[usedUnit];
+        }
+
+        function updateRecipeUnitOptions() {
+          const selectedPantryId = parseInt(pantrySelect.value);
+          const ingredient = pantry.find((i) => i.id === selectedPantryId);
+          const recipeUnitSelect = document.getElementById(
+            "recipe-ingredient-unit"
+          );
+          if (!ingredient) {
+            Array.from(recipeUnitSelect.options).forEach(
+              (opt) => (opt.hidden = false)
+            );
+            return;
+          }
+          const compatibleUnits = unitCompatibility[ingredient.unit] || [];
+          Array.from(recipeUnitSelect.options).forEach((opt) => {
+            opt.hidden = !compatibleUnits.includes(opt.value);
+          });
+          if (recipeUnitSelect.options[recipeUnitSelect.selectedIndex].hidden) {
+            recipeUnitSelect.value = compatibleUnits[0] || "g";
+          }
+        }
+
+        // --- EXCEL HANDLING ---
+        function handleFileUpload(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: "array" });
+
+              if (workbook.Sheets["Pantry"]) {
+                pantry = XLSX.utils.sheet_to_json(workbook.Sheets["Pantry"]);
+              }
+              if (workbook.Sheets["SavedRecipes"]) {
+                const recipesRaw = XLSX.utils.sheet_to_json(
+                  workbook.Sheets["SavedRecipes"]
+                );
+                // Group ingredients by recipe ID
+                const recipesGrouped = recipesRaw.reduce((acc, row) => {
+                  acc[row.recipeId] = acc[row.recipeId] || {
+                    id: row.recipeId,
+                    name: row.recipeName,
+                    ingredients: [],
+                  };
+                  acc[row.recipeId].ingredients.push({
+                    id: row.ingredientId,
+                    pantryId: row.pantryId,
+                    name: row.ingredientName,
+                    usedQuantity: row.usedQuantity,
+                    usedUnit: row.usedUnit,
+                    cost: row.cost,
+                  });
+                  return acc;
+                }, {});
+                savedRecipes = Object.values(recipesGrouped);
+              }
+
+              saveStateToLocalStorage();
+              renderAll();
+              alert("Datos cargados desde Excel exitosamente.");
+            } catch (error) {
+              console.error("Error al leer el archivo Excel:", error);
+              alert(
+                "Hubo un error al leer el archivo. Asegúrate de que tenga el formato correcto."
+              );
+            }
+          };
+          reader.readAsArrayBuffer(file);
+        }
+
+        function saveAndDownloadExcel() {
+          const pantrySheet = XLSX.utils.json_to_sheet(pantry);
+
+          // Flatten saved recipes for Excel
+          const recipesFlat = savedRecipes.flatMap((recipe) =>
+            recipe.ingredients.map((ing) => ({
+              recipeId: recipe.id,
+              recipeName: recipe.name,
+              ingredientId: ing.id,
+              pantryId: ing.pantryId,
+              ingredientName: ing.name,
+              usedQuantity: ing.usedQuantity,
+              usedUnit: ing.usedUnit,
+              cost: ing.cost,
+            }))
+          );
+          const recipesSheet = XLSX.utils.json_to_sheet(recipesFlat);
+
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, pantrySheet, "Pantry");
+          XLSX.utils.book_append_sheet(workbook, recipesSheet, "SavedRecipes");
+
+          XLSX.writeFile(workbook, "Datos_Costos_Produccion.xlsx");
+        }
+
+        function downloadTemplate(e) {
+          e.preventDefault();
+          const pantryHeaders = [["id", "name", "price", "quantity", "unit"]];
+          const recipeHeaders = [
+            [
+              "recipeId",
+              "recipeName",
+              "ingredientId",
+              "pantryId",
+              "ingredientName",
+              "usedQuantity",
+              "usedUnit",
+              "cost",
+            ],
+          ];
+
+          const pantrySheet = XLSX.utils.aoa_to_sheet(pantryHeaders);
+          const recipesSheet = XLSX.utils.aoa_to_sheet(recipeHeaders);
+
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, pantrySheet, "Pantry");
+          XLSX.utils.book_append_sheet(workbook, recipesSheet, "SavedRecipes");
+
+          XLSX.writeFile(workbook, "Plantilla_Costos_Produccion.xlsx");
+        }
+
+        // --- RENDERING ---
+        function renderAll() {
+          renderPantryList();
+          renderCurrentRecipeList();
+          updatePantrySelect();
+          updateCalculations();
+          updateRecipeUnitOptions();
+          renderSavedRecipesList();
+          saveStateToLocalStorage();
+        }
+
+        function renderPantryList() {
+          pantryList.innerHTML =
+            pantry.length === 0
+              ? '<p class="text-slate-500 text-center py-4">Tu despensa está vacía.</p>'
+              : "";
+          pantry.forEach((item) => {
+            const el = document.createElement("div");
+            el.className =
+              "flex justify-between items-center p-3 bg-slate-700/50 rounded-lg";
+            el.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-slate-200">${
+                              item.name
+                            }</p>
+                            <p class="text-xs text-slate-400">${currencyFormatter.format(
+                              item.price
+                            )} / ${item.quantity} ${item.unit}</p>
+                        </div>
+                        <button class="icon-btn delete-pantry-item-btn" data-id="${
+                          item.id
+                        }" title="Eliminar Ingrediente"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
+                    `;
+            pantryList.appendChild(el);
+          });
+        }
+
+        function renderCurrentRecipeList() {
+          recipeList.innerHTML =
+            currentRecipe.length === 0
+              ? '<p class="text-slate-500 text-center py-4">Añade ingredientes para tu receta.</p>'
+              : "";
+          currentRecipe.forEach((item) => {
+            const el = document.createElement("div");
+            el.className =
+              "flex justify-between items-center p-2 bg-slate-700/50 rounded-lg text-sm";
+            el.innerHTML = `
+                        <div>
+                            <p class="font-medium text-slate-300">${
+                              item.name
+                            }</p>
+                            <p class="text-xs text-slate-500">${
+                              item.usedQuantity
+                            } ${item.usedUnit}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-semibold text-slate-200">${currencyFormatter.format(
+                              item.cost
+                            )}</span>
+                            <button class="icon-btn delete-recipe-item-btn" data-id="${
+                              item.id
+                            }" title="Quitar Ingrediente"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                        </div>
+                    `;
+            recipeList.appendChild(el);
+          });
+        }
+
+        function renderSavedRecipesList() {
+          savedRecipesList.innerHTML =
+            savedRecipes.length === 0
+              ? '<p class="text-slate-500 text-center py-4">No tienes recetas guardadas.</p>'
+              : "";
+          savedRecipes.forEach((recipe) => {
+            const el = document.createElement("div");
+            el.className =
+              "flex justify-between items-center p-3 bg-slate-700/50 rounded-lg";
+            el.innerHTML = `
+                        <p class="font-semibold text-slate-200">${recipe.name}</p>
+                        <div class="flex gap-2">
+                            <button class="btn btn-primary text-xs load-recipe-btn" data-id="${recipe.id}">Cargar</button>
+                            <button class="icon-btn delete-saved-recipe-btn" data-id="${recipe.id}" title="Eliminar Receta"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
+                        </div>
+                    `;
+            savedRecipesList.appendChild(el);
+          });
+        }
+
+        function updatePantrySelect() {
+          const currentVal = pantrySelect.value;
+          pantrySelect.innerHTML =
+            '<option value="">Selecciona un ingrediente</option>';
+          pantry.forEach((item) => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.name;
+            pantrySelect.appendChild(option);
+          });
+          pantrySelect.value = currentVal;
+        }
+
+        function updateCalculations() {
+          const total = currentRecipe.reduce((sum, item) => sum + item.cost, 0);
+          totalCostEl.textContent = currencyFormatter.format(total);
+
+          const profitMargin = parseFloat(profitMarginInput.value) || 0;
+          const sellingPrice = total * (1 + profitMargin / 100);
+          sellingPriceEl.textContent = currencyFormatter.format(sellingPrice);
+        }
+
+        // --- EVENT HANDLERS ---
+        pantryForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const name = document.getElementById("pantry-ingredient-name").value;
+          const price = parseFloat(
+            document.getElementById("pantry-ingredient-price").value
+          );
+          const quantity = parseFloat(
+            document.getElementById("pantry-ingredient-quantity").value
+          );
+          const unit = document.getElementById("pantry-ingredient-unit").value;
+          if (name && !isNaN(price) && !isNaN(quantity)) {
+            pantry.push({ id: Date.now(), name, price, quantity, unit });
+            renderAll();
+            pantryForm.reset();
+          }
+        });
+
+        recipeForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const pantryIngredientId = parseInt(pantrySelect.value);
+          const usedQuantity = parseFloat(
+            document.getElementById("recipe-ingredient-quantity").value
+          );
+          const usedUnit = document.getElementById(
+            "recipe-ingredient-unit"
+          ).value;
+          const pantryItem = pantry.find((i) => i.id === pantryIngredientId);
+          if (pantryItem && !isNaN(usedQuantity)) {
+            const cost = calculateCost(
+              pantryIngredientId,
+              usedQuantity,
+              usedUnit
+            );
+            currentRecipe.push({
+              id: Date.now(),
+              pantryId: pantryIngredientId,
+              name: pantryItem.name,
+              usedQuantity,
+              usedUnit,
+              cost,
+            });
+            renderAll();
+            recipeForm.reset();
+            updateRecipeUnitOptions();
+          }
+        });
+
+        pantryList.addEventListener("click", (e) => {
+          const deleteBtn = e.target.closest(".delete-pantry-item-btn");
+          if (deleteBtn) {
+            const id = parseInt(deleteBtn.dataset.id);
+            currentRecipe = currentRecipe.filter(
+              (item) => item.pantryId !== id
+            );
+            pantry = pantry.filter((item) => item.id !== id);
+            renderAll();
+          }
+        });
+
+        recipeList.addEventListener("click", (e) => {
+          const deleteBtn = e.target.closest(".delete-recipe-item-btn");
+          if (deleteBtn) {
+            const id = parseInt(deleteBtn.dataset.id);
+            currentRecipe = currentRecipe.filter((item) => item.id !== id);
+            renderAll();
+          }
+        });
+
+        savedRecipesList.addEventListener("click", (e) => {
+          const loadBtn = e.target.closest(".load-recipe-btn");
+          if (loadBtn) {
+            const id = parseInt(loadBtn.dataset.id);
+            const recipeToLoad = savedRecipes.find((r) => r.id === id);
+            if (recipeToLoad) {
+              currentRecipe = JSON.parse(
+                JSON.stringify(recipeToLoad.ingredients)
+              ); // Deep copy
+              renderAll();
+            }
+          }
+          const deleteBtn = e.target.closest(".delete-saved-recipe-btn");
+          if (deleteBtn) {
+            const id = parseInt(deleteBtn.dataset.id);
+            savedRecipes = savedRecipes.filter((r) => r.id !== id);
+            renderAll();
+          }
+        });
+
+        clearRecipeBtn.addEventListener("click", () => {
+          currentRecipe = [];
+          renderAll();
+        });
+        profitMarginInput.addEventListener("input", updateCalculations);
+        saveRecipeBtn.addEventListener("click", () => {
+          if (currentRecipe.length > 0) {
+            saveRecipeModal.classList.remove("hidden");
+            document.getElementById("save-recipe-name").focus();
+          } else {
+            alert("No puedes guardar una receta vacía.");
+          }
+        });
+        cancelSaveRecipeBtn.addEventListener("click", () =>
+          saveRecipeModal.classList.add("hidden")
+        );
+        saveRecipeForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const name = document.getElementById("save-recipe-name").value;
+          if (name) {
+            savedRecipes.push({
+              id: Date.now(),
+              name,
+              ingredients: JSON.parse(JSON.stringify(currentRecipe)),
+            });
+            saveRecipeModal.classList.add("hidden");
+            saveRecipeForm.reset();
+            renderAll();
+          }
+        });
+
+        pantrySelect.addEventListener("change", updateRecipeUnitOptions);
+        excelUpload.addEventListener("change", handleFileUpload);
+        downloadBtn.addEventListener("click", saveAndDownloadExcel);
+        templateLink.addEventListener("click", downloadTemplate);
+
+        // --- INITIALIZATION ---
+        loadStateFromLocalStorage();
+        renderAll();
+      });
+    </script>
+  </body>
+</html>
