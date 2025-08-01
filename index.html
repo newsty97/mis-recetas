@@ -110,6 +110,24 @@
           Gestiona tu despensa, guarda tus recetas, calcula tus costos y define
           tus precios.
         </p>
+        <button
+          id="open-instructions-btn"
+          class="mt-4 btn btn-primary inline-flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Ver Instructivo
+        </button>
       </header>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -410,6 +428,134 @@
       </div>
     </div>
 
+    <!-- Instructions Modal -->
+    <div
+      id="instructions-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+          <h2 class="text-2xl font-bold text-slate-200">
+            ¿Cómo usar la Calculadora?
+          </h2>
+          <button
+            id="close-instructions-modal"
+            class="icon-btn text-3xl leading-none"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="overflow-y-auto pr-4 space-y-8">
+          <!-- Step 1 -->
+          <div class="flex gap-4 items-start">
+            <div
+              class="flex-shrink-0 w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+            >
+              1
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-slate-100">
+                Añade tus Ingredientes a la Despensa
+              </h3>
+              <p class="text-slate-400 mt-1">
+                En la sección
+                <strong class="text-indigo-300">"Añadir Ingrediente"</strong>,
+                escribe el nombre del producto que compraste (ej: Harina),
+                cuánto te costó (ej: 2000) y qué cantidad compraste (ej: 1
+                Kilo). Luego, presiona el botón
+                <strong class="text-indigo-300">"Añadir a Despensa"</strong>.
+              </p>
+              <p class="text-slate-400 mt-2">
+                Repite esto con todos tus ingredientes. ¡Solo lo haces una vez
+                por cada producto!
+              </p>
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="flex gap-4 items-start">
+            <div
+              class="flex-shrink-0 w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+            >
+              2
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-slate-100">Arma tu Receta</h3>
+              <p class="text-slate-400 mt-1">
+                Ahora, en
+                <strong class="text-cyan-300">"Construir Receta Actual"</strong
+                >, elige un ingrediente de tu despensa. Luego, escribe la
+                cantidad que usas en tu preparación (ej: 250 gramos). Presiona
+                <strong class="text-cyan-300">"Añadir a Receta"</strong>.
+              </p>
+              <p class="text-slate-400 mt-2">
+                Verás cómo el ingrediente aparece abajo en la sección de
+                <strong class="text-cyan-300">"Análisis de Receta"</strong> con
+                su costo calculado.
+              </p>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="flex gap-4 items-start">
+            <div
+              class="flex-shrink-0 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+            >
+              3
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-slate-100">
+                Calcula el Precio de Venta
+              </h3>
+              <p class="text-slate-400 mt-1">
+                Una vez que tengas todos los ingredientes de tu receta, mira la
+                tarjeta de
+                <strong class="text-emerald-300">"Análisis de Receta"</strong>.
+                Ahí verás el
+                <strong class="text-emerald-300">COSTO TOTAL</strong> de
+                producción.
+              </p>
+              <p class="text-slate-400 mt-2">
+                Para saber a cuánto venderlo, simplemente escribe el
+                <strong class="text-emerald-300">porcentaje de ganancia</strong>
+                que quieres (por ejemplo, 100% para duplicar el costo) y el
+                <strong class="text-emerald-300">PRECIO DE VENTA</strong> se
+                calculará solo.
+              </p>
+            </div>
+          </div>
+          <!-- Step 4 -->
+          <div class="flex gap-4 items-start">
+            <div
+              class="flex-shrink-0 w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+            >
+              4
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-slate-100">
+                Guarda y Carga tus Datos
+              </h3>
+              <p class="text-slate-400 mt-1">
+                Para no perder tu trabajo, usa la sección de
+                <strong class="text-rose-300">"Gestión de Datos"</strong> arriba
+                de todo.
+              </p>
+              <ul class="list-disc list-inside text-slate-400 mt-2 space-y-1">
+                <li>
+                  <strong class="text-rose-300">Guardar:</strong> Presiona
+                  "Descargar Archivo Excel" para guardar tu despensa y recetas
+                  en tu computador o celular.
+                </li>
+                <li>
+                  <strong class="text-rose-300">Cargar:</strong> Si abres la
+                  página en otro momento, presiona "Cargar Datos" y selecciona
+                  el archivo que guardaste para recuperar todo.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         // --- STATE ---
@@ -438,6 +584,13 @@
         const excelUpload = document.getElementById("excel-upload");
         const downloadBtn = document.getElementById("download-btn");
         const templateLink = document.getElementById("template-download-link");
+        const instructionsModal = document.getElementById("instructions-modal");
+        const openInstructionsBtn = document.getElementById(
+          "open-instructions-btn"
+        );
+        const closeInstructionsBtn = document.getElementById(
+          "close-instructions-modal"
+        );
 
         // --- UNIT CONVERSIONS (to base units: g, ml, unit) ---
         const conversions = { g: 1, kg: 1000, ml: 1, L: 1000, unit: 1 };
@@ -836,6 +989,13 @@
         excelUpload.addEventListener("change", handleFileUpload);
         downloadBtn.addEventListener("click", saveAndDownloadExcel);
         templateLink.addEventListener("click", downloadTemplate);
+
+        openInstructionsBtn.addEventListener("click", () =>
+          instructionsModal.classList.remove("hidden")
+        );
+        closeInstructionsBtn.addEventListener("click", () =>
+          instructionsModal.classList.add("hidden")
+        );
 
         // --- INITIALIZATION ---
         loadStateFromLocalStorage();
