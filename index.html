@@ -180,14 +180,11 @@
           <div
             id="saved-recipes-list"
             class="space-y-3 max-h-48 overflow-y-auto pr-2"
-          >
-            <!-- Las recetas guardadas se insertarán aquí -->
-          </div>
+          ></div>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Columna de Ingredientes (Despensa) -->
         <div class="space-y-6">
           <div class="card">
             <h2 class="text-2xl font-bold mb-4 text-slate-200">
@@ -233,8 +230,9 @@
                   >
                   <input
                     type="number"
+                    step="any"
                     id="pantry-ingredient-quantity"
-                    placeholder="Ej: 1"
+                    placeholder="Ej: 1 o 0.5"
                     class="input-field"
                     required
                   />
@@ -269,13 +267,10 @@
             <div
               id="pantry-list"
               class="space-y-3 max-h-96 overflow-y-auto pr-2"
-            >
-              <!-- Los ingredientes de la despensa se insertarán aquí -->
-            </div>
+            ></div>
           </div>
         </div>
 
-        <!-- Columna de Receta -->
         <div class="space-y-6">
           <div class="card">
             <h2 class="text-2xl font-bold mb-4 text-slate-200">
@@ -307,8 +302,9 @@
                   >
                   <input
                     type="number"
+                    step="any"
                     id="recipe-ingredient-quantity"
-                    placeholder="Ej: 250"
+                    placeholder="Ej: 250 o 0.05"
                     class="input-field"
                     required
                   />
@@ -327,6 +323,7 @@
                     <option value="g">Gramos (g)</option>
                     <option value="kg">Kilos (kg)</option>
                     <option value="ml">Mililitros (ml)</option>
+                    <option value="gotas">Gotas</option>
                     <option value="L">Litros (L)</option>
                     <option value="unit">Unidad(es)</option>
                   </select>
@@ -352,9 +349,7 @@
                 </button>
               </div>
             </div>
-            <div id="recipe-list" class="space-y-2 mb-4">
-              <!-- Los ingredientes de la receta se insertarán aquí -->
-            </div>
+            <div id="recipe-list" class="space-y-2 mb-4"></div>
             <div class="border-t-2 border-slate-700 pt-4 mt-4 space-y-4">
               <div class="flex justify-between items-center">
                 <span class="text-lg font-bold text-slate-100"
@@ -374,10 +369,11 @@
                 >
                 <input
                   type="number"
+                  step="any"
                   id="profit-margin"
                   value="100"
                   class="input-field w-full"
-                  placeholder="Ej: 100"
+                  placeholder="Ej: 100 o 120.5"
                 />
               </div>
               <div
@@ -398,7 +394,6 @@
       </div>
     </div>
 
-    <!-- Save Recipe Modal -->
     <div
       id="save-recipe-modal"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
@@ -498,7 +493,6 @@
       </div>
     </div>
 
-    <!-- Recipe Details Modal -->
     <div
       id="recipe-details-modal"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
@@ -518,13 +512,13 @@
             &times;
           </button>
         </div>
-        <div id="recipe-details-content" class="overflow-y-auto pr-4 space-y-4">
-          <!-- Content will be injected here -->
-        </div>
+        <div
+          id="recipe-details-content"
+          class="overflow-y-auto pr-4 space-y-4"
+        ></div>
       </div>
     </div>
 
-    <!-- Instructions Modal -->
     <div
       id="instructions-modal"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
@@ -542,7 +536,6 @@
           </button>
         </div>
         <div class="overflow-y-auto pr-4 space-y-8">
-          <!-- Step 1 -->
           <div class="flex gap-4 items-start">
             <div
               class="flex-shrink-0 w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
@@ -567,7 +560,6 @@
               </p>
             </div>
           </div>
-          <!-- Step 2 -->
           <div class="flex gap-4 items-start">
             <div
               class="flex-shrink-0 w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
@@ -590,7 +582,6 @@
               </p>
             </div>
           </div>
-          <!-- Step 3 -->
           <div class="flex gap-4 items-start">
             <div
               class="flex-shrink-0 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
@@ -618,7 +609,6 @@
               </p>
             </div>
           </div>
-          <!-- Step 4 -->
           <div class="flex gap-4 items-start">
             <div
               class="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
@@ -645,7 +635,6 @@
               </p>
             </div>
           </div>
-          <!-- Step 5 -->
           <div class="flex gap-4 items-start">
             <div
               class="flex-shrink-0 w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center text-white font-bold text-2xl"
@@ -738,12 +727,19 @@
         );
 
         // --- UNIT CONVERSIONS (to base units: g, ml, unit) ---
-        const conversions = { g: 1, kg: 1000, ml: 1, L: 1000, unit: 1 };
+        const conversions = {
+          g: 1,
+          kg: 1000,
+          ml: 1,
+          L: 1000,
+          unit: 1,
+          gotas: 0.05,
+        };
         const unitCompatibility = {
           g: ["g", "kg"],
           kg: ["g", "kg"],
-          ml: ["ml", "L"],
-          L: ["ml", "L"],
+          ml: ["ml", "L", "gotas"],
+          L: ["ml", "L", "gotas"],
           unit: ["unit"],
         };
 
@@ -1099,18 +1095,18 @@
             el.className =
               "flex justify-between items-center p-3 bg-slate-700/50 rounded-lg";
             el.innerHTML = `
-                        <div>
-                            <p class="font-semibold text-slate-200">${
-                              item.name
-                            }</p>
-                            <p class="text-xs text-slate-400">${currencyFormatter.format(
-                              item.price
-                            )} / ${item.quantity} ${item.unit}</p>
-                        </div>
-                        <button class="icon-btn delete-pantry-item-btn" data-id="${
-                          item.id
-                        }" title="Eliminar Ingrediente"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
-                    `;
+                                <div>
+                                    <p class="font-semibold text-slate-200">${
+                                      item.name
+                                    }</p>
+                                    <p class="text-xs text-slate-400">${currencyFormatter.format(
+                                      item.price
+                                    )} / ${item.quantity} ${item.unit}</p>
+                                </div>
+                                <button class="icon-btn delete-pantry-item-btn" data-id="${
+                                  item.id
+                                }" title="Eliminar Ingrediente"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
+                            `;
             pantryList.appendChild(el);
           });
         }
@@ -1125,23 +1121,23 @@
             el.className =
               "flex justify-between items-center p-2 bg-slate-700/50 rounded-lg text-sm";
             el.innerHTML = `
-                        <div>
-                            <p class="font-medium text-slate-300">${
-                              item.name
-                            }</p>
-                            <p class="text-xs text-slate-500">${
-                              item.usedQuantity
-                            } ${item.usedUnit}</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <span class="font-semibold text-slate-200">${currencyFormatter.format(
-                              item.cost
-                            )}</span>
-                            <button class="icon-btn delete-recipe-item-btn" data-id="${
-                              item.id
-                            }" title="Quitar Ingrediente"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                        </div>
-                    `;
+                                <div>
+                                    <p class="font-medium text-slate-300">${
+                                      item.name
+                                    }</p>
+                                    <p class="text-xs text-slate-500">${
+                                      item.usedQuantity
+                                    } ${item.usedUnit}</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="font-semibold text-slate-200">${currencyFormatter.format(
+                                      item.cost
+                                    )}</span>
+                                    <button class="icon-btn delete-recipe-item-btn" data-id="${
+                                      item.id
+                                    }" title="Quitar Ingrediente"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                                </div>
+                            `;
             recipeList.appendChild(el);
           });
         }
@@ -1156,13 +1152,13 @@
             el.className =
               "flex justify-between items-center p-3 bg-slate-700/50 rounded-lg";
             el.innerHTML = `
-                        <p class="font-semibold text-slate-200">${recipe.name}</p>
-                        <div class="flex gap-2">
-                            <button class="btn btn-primary text-xs view-recipe-btn" data-id="${recipe.id}">Ver</button>
-                            <button class="btn btn-success text-xs load-recipe-btn" data-id="${recipe.id}">Cargar</button>
-                            <button class="icon-btn delete-saved-recipe-btn" data-id="${recipe.id}" title="Eliminar Receta"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
-                        </div>
-                    `;
+                                <p class="font-semibold text-slate-200">${recipe.name}</p>
+                                <div class="flex gap-2">
+                                    <button class="btn btn-primary text-xs view-recipe-btn" data-id="${recipe.id}">Ver</button>
+                                    <button class="btn btn-success text-xs load-recipe-btn" data-id="${recipe.id}">Cargar</button>
+                                    <button class="icon-btn delete-saved-recipe-btn" data-id="${recipe.id}" title="Eliminar Receta"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
+                                </div>
+                            `;
             savedRecipesList.appendChild(el);
           });
         }
@@ -1179,13 +1175,15 @@
           let ingredientsHtml = recipe.ingredients
             .map(
               (ing) => `
-                    <li class="flex justify-between">
-                        <span>${ing.name} - ${ing.usedQuantity} ${
+                                <li class="flex justify-between">
+                                    <span>${ing.name} - ${ing.usedQuantity} ${
                 ing.usedUnit
               }</span>
-                        <span>${currencyFormatter.format(ing.cost)}</span>
-                    </li>
-                `
+                                    <span>${currencyFormatter.format(
+                                      ing.cost
+                                    )}</span>
+                                </li>
+                            `
             )
             .join("");
 
@@ -1197,30 +1195,33 @@
           let audioPlayerHtml = "";
           if (recipe.audioBase64) {
             audioPlayerHtml = `
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-100 mb-2">Audio de la Receta</h3>
-                            <audio controls src="${recipe.audioBase64}" class="w-full"></audio>
-                        </div>
-                    `;
+                                    <div>
+                                        <h3 class="font-bold text-lg text-slate-100 mb-2">Audio de la Receta</h3>
+                                        <audio controls src="${recipe.audioBase64}" class="w-full"></audio>
+                                    </div>
+                                `;
           }
 
           contentEl.innerHTML = `
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-100 mb-2">Ingredientes</h3>
-                        <ul class="space-y-1 text-slate-300 list-disc list-inside">${ingredientsHtml}</ul>
-                        <div class="flex justify-between font-bold text-slate-100 border-t border-slate-600 mt-2 pt-2">
-                            <span>Costo Total:</span>
-                            <span>${currencyFormatter.format(totalCost)}</span>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-100 mb-2">Preparación</h3>
-                        <p class="text-slate-300 whitespace-pre-wrap">${
-                          recipe.description || "No se añadió una descripción."
-                        }</p>
-                    </div>
-                    ${audioPlayerHtml}
-                `;
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-100 mb-2">Ingredientes</h3>
+                                    <ul class="space-y-1 text-slate-300 list-disc list-inside">${ingredientsHtml}</ul>
+                                    <div class="flex justify-between font-bold text-slate-100 border-t border-slate-600 mt-2 pt-2">
+                                        <span>Costo Total:</span>
+                                        <span>${currencyFormatter.format(
+                                          totalCost
+                                        )}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-100 mb-2">Preparación</h3>
+                                    <p class="text-slate-300 whitespace-pre-wrap">${
+                                      recipe.description ||
+                                      "No se añadió una descripción."
+                                    }</p>
+                                </div>
+                                ${audioPlayerHtml}
+                            `;
 
           recipeDetailsModal.classList.remove("hidden");
         }
